@@ -36,6 +36,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	user := types.User{
 		FirstName: "Buddy",
 		LastName:  "Hield",
@@ -46,9 +47,11 @@ func main() {
 
 	app := fiber.New(config)
 	apiv1 := app.Group("api/v1")
-
+	apiv1.Post("/user", userHandler.HandlePostUser)
+	apiv1.Put("/user/:id", userHandler.HandlePutUser)
 	apiv1.Get("/user", userHandler.HandleGetUsers)
 	apiv1.Get("/user/:id", userHandler.HandleGetUser)
+	apiv1.Delete("/user/:id", userHandler.HandleDeleteUser)
 	app.Listen(*listtenAddr)
 	fmt.Println()
 }
