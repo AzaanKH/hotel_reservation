@@ -1,9 +1,7 @@
 package db
 
-import (
-
+const (
+	DBNAME = "hotel-reservation"
+	DBURI  = "mongodb://localhost:27017"
+	TestDBNAME = "hotel-reservation-test"
 )
-
-const DBNAME = "hotel-reservation"
-
-

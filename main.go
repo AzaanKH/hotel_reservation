@@ -14,15 +14,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const dburi = "mongodb://localhost:27017"
-const dbname = "hotel-reservation"
 const userColl = "users"
 
 var config = fiber.Config{
-    
-    ErrorHandler: func(c *fiber.Ctx, err error) error {
-       return c.JSON(map[string]string{"error" : err.Error()})
-    },
+
+	ErrorHandler: func(c *fiber.Ctx, err error) error {
+		return c.JSON(map[string]string{"error": err.Error()})
+	},
 }
 
 func main() {
@@ -31,7 +29,7 @@ func main() {
 	flag.Parse()
 
 	client, err := mongo.Connect(context.TODO(), options.Client().
-		ApplyURI(dburi))
+		ApplyURI(db.DBURI))
 
 	if err != nil {
 		log.Fatal(err)
@@ -41,9 +39,9 @@ func main() {
 		FirstName: "Buddy",
 		LastName:  "Hield",
 	}
-	client.Database(dburi).Collection(userColl).InsertOne(context.TODO(), user)
+	client.Database(db.DBURI).Collection(userColl).InsertOne(context.TODO(), user)
 
-	userHandler := api.NewUserHandler(db.NewMongoUserStore(client))
+	userHandler := api.NewUserHandler(db.NewMongoUserStore(client, db.DBNAME))
 
 	app := fiber.New(config)
 	apiv1 := app.Group("api/v1")
