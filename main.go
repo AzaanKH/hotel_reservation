@@ -42,10 +42,16 @@ func main() {
 
 	// handlers init
 	var (
-		userHandler  = api.NewUserHandler(db.NewMongoUserStore(client, db.DBNAME))
-		hotelStore   = db.NewMongoHotelStore(client)
-		roomStore    = db.NewMongoRoomStore(client, hotelStore)
-		hotelHandler = api.NewHotelHandler(hotelStore, roomStore)
+		userStore   = db.NewMongoUserStore(client)
+		userHandler = api.NewUserHandler(userStore)
+		hotelStore  = db.NewMongoHotelStore(client)
+		roomStore   = db.NewMongoRoomStore(client, hotelStore)
+		store       = &db.Store{
+			User:  userStore,
+			Room:  roomStore,
+			Hotel: hotelStore,
+		}
+		hotelHandler = api.NewHotelHandler(store)
 		app          = fiber.New(config)
 		apiv1        = app.Group("api/v1")
 	)
@@ -59,6 +65,7 @@ func main() {
 
 	// hotel handlers
 	apiv1.Get("/hotel", hotelHandler.HandleGetHotels)
+	apiv1.Get("hotel/:id", hotelHandler.HandleGetHotel)
 	apiv1.Get("hotel/:id/rooms", hotelHandler.HandleGetRooms)
 	app.Listen(*listtenAddr)
 
