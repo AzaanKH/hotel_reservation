@@ -12,53 +12,67 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func main() {
-	ctx := context.Background()
+var (
+	client     *mongo.Client
+	roomStore  db.RoomStore
+	hotelStore db.HotelStore
+	ctx        = context.Background()
+)
 
-	client, err := mongo.Connect(context.TODO(), options.Client().
-		ApplyURI(db.DBURI))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	hotelStore := db.NewMongoHotelStore(client)
-	roomStore := db.NewMongoRoomStore(client, hotelStore)
+func seedHotel(name, location string, rating int) {
 	hotel := types.Hotel{
-		Name:     "Buddy",
-		Location: "San Francisco",
+		Name:     name,
+		Location: location,
 		Rooms:    []primitive.ObjectID{},
+		Rating:   rating,
 	}
 
 	rooms := []types.Room{
 		{
-			Type:      types.SingleRoomType,
-			BasePrice: 99.9,
+			Size:  "small",
+			Price: 99.9,
 		},
 		{
-			Type:      types.DeluxeRoomType,
-			BasePrice: 199.9,
+			Size:  "normal",
+			Price: 199.9,
 		},
 		{
-			Type:      types.SeaSideRoomType,
-			BasePrice: 145.9,
+			Size:  "king",
+			Price: 345.9,
 		},
 	}
-
-	// room := types.Room{
-	// 	Type:      types.SingleRoomType,
-	// 	BasePrice: 99.99,
-	// }
-	insteredHotel, err := hotelStore.InsertHotel(ctx, &hotel)
+	insteredHotel, err := hotelStore.Insert(ctx, &hotel)
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(insteredHotel)
 	for _, room := range rooms {
 		room.HotelID = insteredHotel.ID
-		insertedRoom, err := roomStore.InsertRoom(ctx, &room)
+		_, err := roomStore.Insert(ctx, &room)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(insertedRoom)
 	}
+
+}
+
+func main() {
+	seedHotel("Buddys Hotel", "Pakistan", 4)
+	seedHotel("Buddys Hotel #2", "Lahore", 4)
+	seedHotel("Buddys Hotel #3", "Bahamas", 5)
+}
+
+func init() {
+	var err error
+	client, err := mongo.Connect(context.TODO(), options.Client().
+		ApplyURI(db.DBURI))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := client.Database(db.DBNAME).Collection("hotels").Drop(ctx); err != nil {
+		log.Fatal(err)
+	}
+	hotelStore = db.NewMongoHotelStore(client)
+	roomStore = db.NewMongoRoomStore(client, hotelStore)
 }
