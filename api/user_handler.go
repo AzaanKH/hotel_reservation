@@ -23,7 +23,7 @@ func NewUserHandler(userStore db.UserStore) *UserHandler {
 
 func (h *UserHandler) HandlePutUser(c *fiber.Ctx) error {
 	var (
-		params  types.UpdateUserParams
+		params types.UpdateUserParams
 		userID = c.Params("id")
 	)
 	oid, err := primitive.ObjectIDFromHex(userID)
