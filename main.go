@@ -6,9 +6,12 @@ import (
 	"log"
 
 	"github.com/AzaanKH/hotel_reservation/api"
+	"github.com/AzaanKH/hotel_reservation/api/middleware"
 	"github.com/AzaanKH/hotel_reservation/db"
 	"github.com/AzaanKH/hotel_reservation/types"
 	"github.com/gofiber/fiber/v2"
+
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -24,6 +27,10 @@ var config = fiber.Config{
 
 func main() {
 
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("Warning: .env file not found or cannot be loaded: %v", err)
+	}
 	listtenAddr := flag.String("listenAddr", ":5001", "The listen address of the API server")
 	flag.Parse()
 
@@ -42,19 +49,23 @@ func main() {
 
 	// handlers init
 	var (
-		userStore   = db.NewMongoUserStore(client)
-		userHandler = api.NewUserHandler(userStore)
-		hotelStore  = db.NewMongoHotelStore(client)
-		roomStore   = db.NewMongoRoomStore(client, hotelStore)
-		store       = &db.Store{
+		userStore  = db.NewMongoUserStore(client)
+		hotelStore = db.NewMongoHotelStore(client)
+		roomStore  = db.NewMongoRoomStore(client, hotelStore)
+		store      = &db.Store{
 			User:  userStore,
 			Room:  roomStore,
 			Hotel: hotelStore,
 		}
+		userHandler  = api.NewUserHandler(userStore)
 		hotelHandler = api.NewHotelHandler(store)
+		authHandler  = api.NewAuthHandler(userStore)
 		app          = fiber.New(config)
-		apiv1        = app.Group("api/v1")
+		auth         = app.Group("/api")
+		apiv1        = app.Group("api/v1", middleware.JWTAuthentication)
 	)
+	// auth handler
+	auth.Post("/auth", authHandler.HandleAuthenticate)
 
 	// user handlers
 	apiv1.Post("/user", userHandler.HandlePostUser)
