@@ -80,17 +80,33 @@ func main() {
 	seedHotel("Buddys Hotel #3", "Bahamas", 5)
 	seedUser(false, "Buddy", "Hield", "buddybuckets24@mail.com", "buddybuckets2424")
 	seedUser(true, "admin", "admin", "admin@mail.com", "buddybuckets24245728582")
+
+	// users, err := userStore.GetUsers(context.Background())
+	// if err != nil {
+	// 	log.Fatal("Error retrieving users:", err)
+	// }
+	// fmt.Printf("Found %d users in database\n", len(users))
+	// for _, u := range users {
+	// 	fmt.Printf("User: %s %s (%s)\n", u.FirstName, u.LastName, u.Email)
+	// }
+
+	// time.Sleep(2 * time.Second)
+
+	// // Properly close the connection
+	if err := client.Disconnect(context.Background()); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func init() {
 	var err error
-	client, err := mongo.Connect(context.TODO(), options.Client().
+	client, err = mongo.Connect(context.TODO(), options.Client().
 		ApplyURI(db.DBURI))
 
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := client.Database(db.DBNAME).Collection(db.DBNAME).Drop(ctx); err != nil {
+	if err := client.Database(db.DBNAME).Drop(ctx); err != nil {
 		log.Fatal(err)
 	}
 	hotelStore = db.NewMongoHotelStore(client)
