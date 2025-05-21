@@ -20,16 +20,17 @@ var (
 	ctx        = context.Background()
 )
 
-func seedUser(fname, lname, email string) {
+func seedUser(admin bool, fname, lname, email, password string) {
 	user, err := types.NewUserFromParams(types.CreateUserParams{
 		Email:     email,
 		FirstName: fname,
 		LastName:  lname,
-		Password:  "buddybuckets2424",
+		Password:  password,
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
+	user.Admin = admin
 	_, err = userStore.InsertUser(context.TODO(), user)
 	if err != nil {
 		log.Fatal(err)
@@ -77,7 +78,8 @@ func main() {
 	seedHotel("Buddys Hotel", "Pakistan", 4)
 	seedHotel("Buddys Hotel #2", "Lahore", 4)
 	seedHotel("Buddys Hotel #3", "Bahamas", 5)
-	seedUser("Buddy", "Hield", "buddybuckets24@mail.com")
+	seedUser(false, "Buddy", "Hield", "buddybuckets24@mail.com", "buddybuckets2424")
+	seedUser(true, "admin", "admin", "admin@mail.com", "buddybuckets24245728582")
 }
 
 func init() {
@@ -88,7 +90,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := client.Database(db.DBNAME).Collection("hotels").Drop(ctx); err != nil {
+	if err := client.Database(db.DBNAME).Collection(db.DBNAME).Drop(ctx); err != nil {
 		log.Fatal(err)
 	}
 	hotelStore = db.NewMongoHotelStore(client)
