@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/AzaanKH/hotel_reservation/db"
+	"github.com/AzaanKH/hotel_reservation/db/fixtures"
 	"github.com/AzaanKH/hotel_reservation/types"
 	"github.com/gofiber/fiber/v2"
 )
@@ -35,15 +36,15 @@ func insertTestUser(t *testing.T, userStore db.UserStore) *types.User {
 func TestAuthenticateSucces(t *testing.T) {
 	tdb := setup(t)
 	defer tdb.teardown(t)
-	insertedUser := insertTestUser(t, tdb.UserStore)
-
+	// insertedUser := insertTestUser(t, tdb.User)
+	insertedUser := fixtures.AddUser(tdb.Store, "Buddy", "Hield", false)
 	app := fiber.New()
-	authHandler := NewAuthHandler(tdb.UserStore)
+	authHandler := NewAuthHandler(tdb.User)
 	app.Post("/auth", authHandler.HandleAuthenticate)
 
 	params := AuthParams{
-		Email:    "buddybuckets@gmail.com",
-		Password: "buddybuckets24",
+		Email:    "Buddy@Hield.com",
+		Password: "Buddy_Hield",
 	}
 	b, _ := json.Marshal(params)
 	req := httptest.NewRequest("POST", "/auth", bytes.NewReader(b))

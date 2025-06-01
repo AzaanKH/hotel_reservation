@@ -64,13 +64,32 @@ func (h *AuthHandler) HandleAuthenticate(c *fiber.Ctx) error {
 		return invalidCredentials(c)
 	}
 	resp := AuthResponse{
-		User:  user,
-		Token: createTokenFromUser(user),
+		User: user,
+		// public function for seed
+		Token: CreateTokenFromUser(user),
 	}
 	return c.JSON(resp)
 }
 
-func createTokenFromUser(user *types.User) string {
+// func createTokenFromUser(user *types.User) string {
+// 	now := time.Now()
+// 	expires := now.Add(time.Hour * 4).Unix()
+// 	claims := jwt.MapClaims{
+// 		"id":      user.ID,
+// 		"email":   user.Email,
+// 		"expires": expires,
+// 	}
+// 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+// 	secret := os.Getenv("JWT_SECRET")
+// 	tokenStr, err := token.SignedString([]byte(secret))
+// 	if err != nil {
+// 		fmt.Println("failed to sign token with secret")
+// 	}
+// 	return tokenStr
+// }
+
+// for seed to directly print the jwt token
+func CreateTokenFromUser(user *types.User) string {
 	now := time.Now()
 	expires := now.Add(time.Hour * 4).Unix()
 	claims := jwt.MapClaims{
